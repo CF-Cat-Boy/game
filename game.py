@@ -25,6 +25,7 @@ def game():
     gravity = 2
     speedm = 2.5
     resistance = 0.75
+    geled = False
 
     # Class for the orange dude
     class Player(object):
@@ -113,14 +114,51 @@ def game():
                         self.rect.top = badwall.rect.bottom
                         speedy = 0
                     badwall.stable = False
+            for gel in gels:
+                if self.rect.colliderect(gel.rect):
+                    gel.geled = True
+                else:
+                    gel.geled = False
+            for wall in door1s:
+                if not wall.open:
+                    if self.rect.colliderect(wall.rect):
+                        if dx > 0: # Moving right; Hit the left side of the wall
+                            self.rect.right = wall.rect.left
+                            speedx = 0
+                        if dx < 0: # Moving left; Hit the right side of the wall
+                            self.rect.left = wall.rect.right
+                            speedx = 0
+                        if dy > 0: # Moving down; Hit the top side of the wall
+                            self.rect.bottom = wall.rect.top
+                            speedy = 0
+                            falling = 0
+                        if dy < 0: # Moving up; Hit the bottom side of the wall
+                            self.rect.top = wall.rect.bottom
+                            speedy = 0
+            for wall in door2s:
+                if not wall.open:
+                    if self.rect.colliderect(wall.rect):
+                        if dx > 0: # Moving right; Hit the left side of the wall
+                            self.rect.right = wall.rect.left
+                            speedx = 0
+                        if dx < 0: # Moving left; Hit the right side of the wall
+                            self.rect.left = wall.rect.right
+                            speedx = 0
+                        if dy > 0: # Moving down; Hit the top side of the wall
+                            self.rect.bottom = wall.rect.top
+                            speedy = 0
+                            falling = 0
+                        if dy < 0: # Moving up; Hit the bottom side of the wall
+                            self.rect.top = wall.rect.bottom
+                            speedy = 0
             if self.rect.colliderect(end_rect):
                 running = False
-                if not lvlnum == 4:
+                if not lvlnum == 5:
                     if lvlcomp == False:
                         lvlcomp = True
                         lvlnum += 1
                         self.move(100, 100)
-                        if lvlnum == 4:
+                        if lvlnum == 5:
                             quitt = True
             for kill in kills:
                 if self.rect.colliderect(kill.rect):
@@ -139,6 +177,17 @@ def game():
                     speedy += -2
                     if dy > 0: # Moving down; Hit the top side of the wall
                         self.move_single_axis(0, -1)
+            for key in key1s:
+                if self.rect.colliderect(key.rect):
+                    key.used = True
+                    for door in door1s:
+                        door.open = True
+            for key in key2s:
+                if self.rect.colliderect(key.rect):
+                    key.used = True
+                    for door in door2s:
+                        door.open = True
+            
 
     # Nice class to hold a wall rect
     class Wall(object):
@@ -179,6 +228,11 @@ def game():
             self.tt2 = False
             badwalls.append(self)
             self.rect = pygame.Rect(pos[0], pos[1], 32, 32)
+    class Gel(object):
+        def __init__(self, pos):
+            self.geled = False
+            gels.append(self)
+            self.rect = pygame.Rect(pos[0], pos[1], 32, 32)
     class Scaff(object):
         def __init__(self, pos):
             scaffs.append(self)
@@ -187,14 +241,26 @@ def game():
         def __init__(self, pos):
             iscaffs.append(self)
             self.rect = pygame.Rect(pos[0], pos[1]+24, 32, 8)
-    '''class LScaff(object):
+    class Key1(object):
         def __init__(self, pos):
-            lscaffs.append(self)
-            self.rect = pygame.Rect(pos[0], pos[1], 8, 32)
-    class RScaff(object):
+            self.used = False
+            key1s.append(self)
+            self.rect = pygame.Rect(pos[0]+12, pos[1]+12, 8, 8)
+    class Door1(object):
         def __init__(self, pos):
-            rscaffs.append(self)
-            self.rect = pygame.Rect(pos[0]+24, pos[1], 8, 32)'''
+            self.open = False
+            door1s.append(self)
+            self.rect = pygame.Rect(pos[0]+12, pos[1], 8, 32)
+    class Key2(object):
+        def __init__(self, pos):
+            self.used = False
+            key2s.append(self)
+            self.rect = pygame.Rect(pos[0]+12, pos[1]+12, 8, 8)
+    class Door2(object):
+        def __init__(self, pos):
+            self.open = False
+            door2s.append(self)
+            self.rect = pygame.Rect(pos[0]+12, pos[1], 8, 32)
 
     def badwallloop():
         for badwall in badwalls:
@@ -237,38 +303,43 @@ def game():
     ups = []
     walls = [] # List to hold the walls
     badwalls = []
+    gels = []
     fakewalls = []
     scaffs = []
     iscaffs = []
-    lscaffs = []
-    rscaffs = []
+    '''lscaffs = []
+    rscaffs = []'''
     killis = []
+    key1s = []
+    door1s = []
+    key2s = []
+    door2s = []
     player = Player() # Create the player
     def lvl(num):
         test = [
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                 ⚑dd",
-        "██████████████████████████████████",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  ",
-        "                                  "
+        "              |       I           ",
+        "      k       |       I           ",
+        "     ---      |       I           ",
+        "              |       I          ⚑",
+        "█████████████████░█████████████████",
+        "█░░░█░░░█░█░░░░░░░█░█░░░░░█░░░█░█░█",
+        "█░███░█░█░█░█░███░█░█░█████░█░█░█░█",
+        "█░░░░░█░█░░░█░░░█░█░░░░░░░░░█░█░░░█",
+        "█░█░█░███░█░█████░███████░█░█░███░█",
+        "█░█░█░█░░░█░█░░░░░█░░░░░░░█░█░░░░░█",
+        "█████░█░█░█░███████░█░███████░███░█",
+        "█░░░░░░░█░█░░░░░░░█░█░░░░░░░█░█░░░█",
+        "█░███░█░█░█░█░█████░███░███████░███",
+        "█░█░░░█░█░█░█░░░░░█░█░░░░░█░█░░░░░█",
+        "█░███░█░█░█░███░███░███░███░█░█░███",
+        "█░█░░░█░█░█░█░█░░░█░░░█░█░█░█░█░░░█",
+        "█░███░███████░█░█████░█░█░█░█░███░█",
+        "█░░░█░░░░░█░░░░░░░█░░░█░█░█░░░█░█░█",
+        "█████░███████████░███░███░███░█░███",
+        "█░█░░░░░█░░░█░░░█░░░█░░░░░░░█░█░░░█",
+        "█░█████░█░█████░███████████░█░█░███",
+        "█░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░░░K█",
+        "███████████████████████████████████"
         ]
         lvl1 = [
         "                ████              ",
@@ -345,6 +416,31 @@ def game():
         "                                  ",
         "                                  "
         ]
+        lvl4 = [
+        "              |       I           ",
+        "      k       |       I           ",
+        "     ---      |       I           ",
+        "              |       I          ⚑",
+        "█████████████████░█████████████████",
+        "█░░░█░░░█░█░░░░░░░█░█░░░░░█░░░█░█░█",
+        "█░███░█░█░█░█░███░█░█░█████░█░█░█░█",
+        "█░░░░░█░█░░░█░░░█░█░░░░░░░░░█░█░░░█",
+        "█░█░█░███░█░█████░███████░█░█░███░█",
+        "█░█░█░█░░░█░█░░░░░█░░░░░░░█░█░░░░░█",
+        "█████░█░█░█░███████░█░███████░███░█",
+        "█░░░░░░░█░█░░░░░░░█░█░░░░░░░█░█░░░█",
+        "█░███░█░█░█░█░█████░███░███████░███",
+        "█░█░░░█░█░█░█░░░░░█░█░░░░░█░█░░░░░█",
+        "█░███░█░█░█░███░███░███░███░█░█░███",
+        "█░█░░░█░█░█░█░█░░░█░░░█░█░█░█░█░░░█",
+        "█░███░███████░█░█████░█░█░█░█░███░█",
+        "█░░░█░░░░░█░░░░░░░█░░░█░█░█░░░█░█░█",
+        "█████░███████████░███░███░███░█░███",
+        "█░█░░░░░█░░░█░░░█░░░█░░░░░░░█░█░░░█",
+        "█░█████░█░█████░███████████░█░█░███",
+        "█░░░░░░░░░░░░░░░░░░░░░░░░░░░█░░░░K█",
+        "███████████████████████████████████"
+        ]
 
         if num == 0:
             return test
@@ -354,14 +450,17 @@ def game():
             return lvl2
         if num == 3:
             return lvl3
+        if num == 4:
+            return lvl4
     x = y = 0
-    print(lvlnum)
     for row in lvl(lvlnum):
         for col in row:
             if col == "█":
                 Wall((x, y))
             if col == "▓":
                 FakeWall((x, y))
+            if col == "░":
+                Gel((x, y))
             if col == "⚑":
                 end_rect = pygame.Rect(x, y, 32, 32)
             if col == "X":
@@ -378,12 +477,16 @@ def game():
                 Scaff((x, y))
             if col == "_":
                 IScaff((x, y))
-            '''if col == "[":
-                LScaff((x, y))
-            if col == "]":
-                RScaff((x, y))'''
             if col == "^":
                 Up((x, y))
+            if col == "k":
+                Key1((x, y))
+            if col == "|":
+                Door1((x, y))
+            if col == "K":
+                Key2((x, y))
+            if col == "I":
+                Door2((x, y))
             x += 32
         y += 32
         x = 0
@@ -399,8 +502,13 @@ def game():
         
         badwallloop()
 
+        for gel in gels:
+            if gel.geled:
+                geled = True
+
         # Move the player if the space,a,d/up,left,right keys are pressed
-        falling = falling+1
+        if not geled:
+            falling = falling+1
         key = pygame.key.get_pressed()
         if key[pygame.K_a] or key[pygame.K_LEFT]:
             speedx = speedx-speedm
@@ -409,23 +517,42 @@ def game():
         if key[pygame.K_F11]:
             if clock.tick(10)/2:
                 pygame.display.toggle_fullscreen()
-        if key[pygame.K_SPACE] or key[pygame.K_UP]:
-            if falling < 3:
-                speedy = speedy+jumpforce
+        if not geled:
+            if key[pygame.K_SPACE] or key[pygame.K_UP]:
+                if falling < 3:
+                    speedy = speedy+jumpforce
+        else:
+            if key[pygame.K_w] or key[pygame.K_UP]:
+                speedy = speedy-speedm
+            if key[pygame.K_s] or key[pygame.K_DOWN]:
+                speedy = speedy+speedm
         if key[pygame.K_ESCAPE]:
             quitt = True
             running = False
 
-        
         speedx = speedx*resistance
-        speedy = speedy+gravity 
+        if not geled:
+            speedy = speedy+gravity
+        else:
+            speedy = speedy*resistance
         player.move(speedx, speedy)
-        
-        #print(speedx, speedy, falling)   
+        geled = False
         # Draw the scene
         screen.fill((0, 0, 0))
         for wall in walls:
             pygame.draw.rect(screen, (255, 255, 255), wall.rect)
+        for door in door1s:
+            if not door.open:
+                pygame.draw.rect(screen, (255, 0, 0), door.rect)
+        for key in key1s:
+            if not key.used:
+                pygame.draw.rect(screen, (255, 0, 0), key.rect)
+        for door in door2s:
+            if not door.open:
+                pygame.draw.rect(screen, (0, 0, 255), door.rect)
+        for key in key2s:
+            if not key.used:
+                pygame.draw.rect(screen, (0, 0, 255), key.rect)
         for fakewall in fakewalls:
             pygame.draw.rect(screen, (250, 250, 250), fakewall.rect)
         for kill in kills:
@@ -439,14 +566,16 @@ def game():
         for badwall in badwalls:
             if badwall.solid:
                 pygame.draw.rect(screen, (128, 128, 128), badwall.rect)
+        for gel in gels:
+            pygame.draw.rect(screen, (60, 126, 143), gel.rect)
         for scaff in scaffs:
             pygame.draw.rect(screen, (188, 106, 60), scaff.rect)
         for iscaff in iscaffs:
             pygame.draw.rect(screen, (188, 106, 60), iscaff.rect)
-        for lscaff in lscaffs:
+        '''for lscaff in lscaffs:
             pygame.draw.rect(screen, (188, 106, 60), lscaff.rect)
         for rscaff in rscaffs:
-            pygame.draw.rect(screen, (188, 106, 60), rscaff.rect)
+            pygame.draw.rect(screen, (188, 106, 60), rscaff.rect)'''
         pygame.draw.rect(screen, (0, 255, 0), end_rect)
         pygame.draw.rect(screen, (255, 128, 128), player.rect)
         pygame.display.flip()
